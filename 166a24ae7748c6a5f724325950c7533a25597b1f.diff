@@ -1,0 +1,204 @@
+
+# 20260724, Adriaan van Os , adriaan@adriaan.biz
+# The work-around for bug 41731
+# https://gitlab.com/freepascal.org/fpc/source/-/work_items/41731
+# is to revert commit 166a24ae7748c6a5f724325950c7533a25597b1f
+# https://gitlab.com/freepascal.org/fpc/source/-/commit/166a24ae7748c6a5f724325950c7533a25597b1f
+
+
+diff --git a/compiler/finput.pas b/compiler/finput.pas
+index 03829f3eca98091bb7cb4df01217380eeb4153f1..94b4bef32407509490873a911192fabf1ff8a4fc 100644
+--- a/compiler/finput.pas
++++ b/compiler/finput.pas
+@@ -365,7 +365,8 @@ implementation
+       begin
+       { create new buffer }
+         SetLength(buf,len+1);
+-        move(p^,buf[0],len);
++        if len>0 then
++          move(p^,buf[0],len);
+         buf[len]:=#0;
+       { reset }
+         bufstart:=0;
+diff --git a/compiler/ppu.pas b/compiler/ppu.pas
+index 3946151c38ea59045c28017b787b294307eced8f..25d9a3f40f604f96e6e5d47932c33ddbb218ab7d 100644
+--- a/compiler/ppu.pas
++++ b/compiler/ppu.pas
+@@ -168,6 +168,7 @@   tppufile=class(tentryfile)
+     procedure writeheader;override;
+     procedure putdata(const b;len:integer);override;
+     procedure putdata(b : tbytedynarray);
++    procedure putdata(b : tansichardynarray);
+   end;
+ 
+ implementation
+@@ -528,6 +529,11 @@ procedure tppufile.putdata(b: tbytedynarray);
+   putdata(b[0],length(b));
+ end;
+ 
++procedure tppufile.putdata(b: tansichardynarray);
++begin
++  putdata(b[0],length(b));
++end;
++
+ function tppufile.getheadersize: longint;
+ begin
+   result:=sizeof(header);
+diff --git a/compiler/scanner.pas b/compiler/scanner.pas
+index 69396bf24dca42d6258b05e8d66b8ef36a4246a2..40c518aa6748e28c43647838267aeb45913d35c5 100644
+--- a/compiler/scanner.pas
++++ b/compiler/scanner.pas
+@@ -1836,7 +1836,8 @@   texprvalue = class
+                   else
+                     len:=mac.buflen;
+                   hs[0]:=char(len);
+-                  move(mac.buftext^,hs[1],len);
++                  if len>0 then
++                    move(mac.buftext[0],hs[1],len);
+                   searchstr2store:=upcase(hs);
+                   searchstr:=@searchstr2store;
+                   mac.is_used:=true;
+@@ -2588,6 +2589,7 @@   texprvalue = class
+                  current_scanner.readchar;
+                  if c <> '=' then
+                    exit;
++                 mac.is_c_macro:=true;
+                  current_scanner.readchar;
+                  current_scanner.skipspace;
+                end;
+@@ -2625,7 +2627,8 @@   texprvalue = class
+              until false;
+ 
+              { copy the text }
+-             move(pchar(@macrobuffer[0])^,mac.allocate_buftext(macropos)^,macropos);
++             if macropos>0 then
++               move(pchar(@macrobuffer[0])^,mac.allocate_buftext(macropos)^,macropos);
+           end
+         else
+           begin
+@@ -2738,6 +2741,7 @@   texprvalue = class
+           begin
+              mac.defined:=false;
+              mac.is_compiler_var:=false;
++             mac.is_c_macro:=false;
+              { delete old definition }
+              mac.free_buftext;
+           end;
+@@ -5346,13 +5350,13 @@            endpos:=recordtokenbuf.pos;
+               if (cs_support_macro in current_settings.moduleswitches) then
+                begin
+                  mac:=tmacro(search_macro(pattern));
+-                 if assigned(mac) and (not mac.is_compiler_var) and (assigned(mac.buftext)) then
++                 if assigned(mac) and (not mac.is_compiler_var) and mac.is_c_macro then
+                   begin
+                     if (yylexcount<max_macro_nesting) and (macro_nesting_depth<max_macro_nesting) then
+                      begin
+                        mac.is_used:=true;
+                        inc(yylexcount);
+-                       substitutemacro(pattern,mac.buftext,mac.buflen,
++                       substitutemacro(pattern,pchar(mac.buftext),mac.buflen,
+                          mac.fileinfo.line,mac.fileinfo.fileindex,false);
+                        { handle empty macros }
+                        if c=#0 then
+diff --git a/compiler/symsym.pas b/compiler/symsym.pas
+index e46cb8fbb1335f9d6d042630a3a29d8fee1f18c1..41289a1afb6fca972f213f619723e99a5c6c1e1b 100644
+--- a/compiler/symsym.pas
++++ b/compiler/symsym.pas
+@@ -475,11 +475,13 @@        tmacro = class(tstoredsym)
+           {True if this is a mac style compiler variable, in which case no macro
+            substitutions shall be done.}
+           is_compiler_var : boolean;
++          { true if the macro is a C macro, i.e used := }
++          is_c_macro : boolean;
+           {Whether the macro was used. NOTE: A use of a macro which was never defined}
+           {e. g. an IFDEF which returns false, will not be registered as used,}
+           {since there is no place to register its use. }
+           is_used : boolean;
+-          buftext : pchar;
++          buftext : TAnsiCharDynArray;
+           buflen  : longint;
+           constructor create(const n : TSymStr);
+           constructor ppuload(ppufile:tcompilerppufile);
+@@ -3111,17 +3113,14 @@ implementation
+          defined:=ppufile.getboolean;
+          is_compiler_var:=ppufile.getboolean;
+          is_used:=false;
+-         buflen:= ppufile.getlongint;
+-         if buflen > 0 then
+-           ppufile.getdata(allocate_buftext(buflen)^, buflen)
+-         else
+-           buftext:=nil;
++         allocate_buftext(ppufile.getlongint);
++         if buflen>0 then
++           ppufile.getdata(buftext)
+       end;
+ 
+     destructor tmacro.destroy;
+       begin
+-         if assigned(buftext) then
+-           freemem(buftext);
++         buftext:=nil;
+          inherited destroy;
+       end;
+ 
+@@ -3132,29 +3131,23 @@ implementation
+          ppufile.putboolean(is_compiler_var);
+          ppufile.putlongint(buflen);
+          if buflen > 0 then
+-           ppufile.putdata(buftext^,buflen);
++           ppufile.putdata(buftext);
+          writeentry(ppufile,ibmacrosym);
+       end;
+ 
+ 
+     function tmacro.allocate_buftext(len:longint) : pchar;
+       begin
+-        result:=getmem(len);
+-        if assigned(buftext) then
+-          freemem(buftext);
+-        buftext:=result;
++        setlength(buftext,len);
+         buflen:=len;
++        result:=PAnsiChar(buftext);
+       end;
+ 
+ 
+     procedure tmacro.free_buftext;
+       begin
+-        if assigned(buftext) then
+-          begin
+-            freemem(buftext);
+-            buftext:=nil;
+-            buflen:=0;
+-          end;
++        buftext:=nil;
++        buflen:=0;
+       end;
+ 
+ 
+@@ -3166,9 +3159,10 @@ implementation
+         p.defined:=defined;
+         p.is_used:=is_used;
+         p.is_compiler_var:=is_compiler_var;
+-        p.buflen:=buflen;
+-        if assigned(buftext) then
+-          move(buftext^,p.allocate_buftext(buflen)^,buflen);
++        p.is_c_macro:=is_c_macro;
++        p.allocate_buftext(buflen);
++        if buflen>0 then
++          move(buftext[0],p.buftext[0],buflen);
+         Result:=p;
+       end;
+ 
+diff --git a/compiler/symtable.pas b/compiler/symtable.pas
+index caab08ae7bd17d89e0f6fdb06453b29643891f47..a37e07b7b766a63bfca49e6d96f24582beb65600 100644
+--- a/compiler/symtable.pas
++++ b/compiler/symtable.pas
+@@ -4923,6 +4923,7 @@         hashedid.id:=class_helper_prefix+s;
+              mac.is_compiler_var:=false;
+              mac.free_buftext;
+            end;
++           mac.is_c_macro:=true;
+          Message2(parser_c_macro_set_to,mac.name,value);
+          move(value[1],mac.allocate_buftext(length(value))^,length(value));
+          mac.defined:=true;
