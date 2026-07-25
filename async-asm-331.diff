@@ -5,9 +5,9 @@
 # to implement asynchronous assembly, to speed up fpc compilation
 
 
-diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/assemble.pas /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/assemble.pas
---- /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/assemble.pas	2026-07-06 22:25:13
-+++ /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/assemble.pas	2026-07-24 08:52:40
+diff -ur a/compiler/assemble.pas b/compiler/assemble.pas
+--- a/compiler/assemble.pas	2026-07-06 22:25:13
++++ b/compiler/assemble.pas	2026-07-24 08:52:40
 @@ -257,6 +257,9 @@
  {$ifdef hasunix}
        unix,
@@ -131,9 +131,9 @@ diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/assemble.pas /Volum
          if result then
            writer.RemoveAsm
 
-diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/fpcdefs.inc /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/fpcdefs.inc
---- /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/fpcdefs.inc	2026-07-06 22:25:13
-+++ /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/fpcdefs.inc	2026-07-21 14:21:59
+diff -ur a/compiler/fpcdefs.inc b/compiler/fpcdefs.inc
+--- a/compiler/fpcdefs.inc	2026-07-06 22:25:13
++++ b/compiler/fpcdefs.inc	2026-07-21 14:21:59
 @@ -464,3 +464,11 @@
    {$define SUPPORT_GET_FRAME}
  {$endif}
@@ -146,9 +146,9 @@ diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/fpcdefs.inc /Volume
 +{$undef false}
 +
 +
-diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/globals.pas /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/globals.pas
---- /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/globals.pas	2026-07-06 22:25:13
-+++ /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/globals.pas	2026-07-24 08:55:32
+diff -ur a/compiler/globals.pas b/compiler/globals.pas
+--- a/compiler/globals.pas	2026-07-06 22:25:13
++++ b/compiler/globals.pas	2026-07-24 08:55:32
 @@ -769,7 +769,36 @@
    var
      AllowedFilenameTransFormations : tfilenametransformations = AllTransformations;
@@ -297,9 +297,9 @@ diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/globals.pas /Volume
  initialization
  {$ifdef LLVM}
 
-diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/globtype.pas /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/globtype.pas
---- /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/globtype.pas	2026-07-08 11:51:30
-+++ /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/globtype.pas	2026-07-19 18:40:03
+diff -ur a/compiler/globtype.pas b/compiler/globtype.pas
+--- a/compiler/globtype.pas	2026-07-08 11:51:30
++++ b/compiler/globtype.pas	2026-07-19 18:40:03
 @@ -229,6 +229,7 @@
           { assembling }
           cs_asm_leave,cs_asm_extern,cs_asm_pipe,cs_asm_source,cs_asm_rtti_source,
@@ -309,9 +309,9 @@ diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/globtype.pas /Volum
           cs_link_nolink,cs_link_static,cs_link_smart,cs_link_shared,cs_link_deffile,
           cs_link_strip,cs_link_staticflag,cs_link_on_target,cs_link_extern,cs_link_opt_vtable,
 
-diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/options.pas /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/options.pas
---- /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/options.pas	2026-07-08 11:51:30
-+++ /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/options.pas	2026-07-19 18:41:22
+diff -ur a/compiler/options.pas b/compiler/options.pas
+--- a/compiler/options.pas	2026-07-08 11:51:30
++++ b/compiler/options.pas	2026-07-19 18:41:22
 @@ -2449,12 +2449,17 @@
  procedure TOption.Interpret_A_U(opt, more: TCmdStr);
  
@@ -336,9 +336,9 @@ diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/options.pas /Volume
  
  
 
-diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/pmodules.pas /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/pmodules.pas
---- /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/pmodules.pas	2026-07-06 22:25:13
-+++ /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/pmodules.pas	2026-07-20 01:04:01
+diff -ur a/compiler/pmodules.pas b/compiler/pmodules.pas
+--- a/compiler/pmodules.pas	2026-07-06 22:25:13
++++ b/compiler/pmodules.pas	2026-07-20 01:04:01
 @@ -2322,6 +2322,11 @@
                 begin
                   { create global resource file by collecting all resource files }
@@ -363,9 +363,9 @@ diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/pmodules.pas /Volum
               deffile.writefile;
 
 
-diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/utils/ppuutils/ppudump.pp /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/utils/ppuutils/ppudump.pp
---- /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/utils/ppuutils/ppudump.pp	2026-07-08 11:51:30
-+++ /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/compiler/utils/ppuutils/ppudump.pp	2026-07-19 18:39:43
+diff -ur a/compiler/utils/ppuutils/ppudump.pp b/compiler/utils/ppuutils/ppudump.pp
+--- a/compiler/utils/ppuutils/ppudump.pp	2026-07-08 11:51:30
++++ b/compiler/utils/ppuutils/ppudump.pp	2026-07-19 18:39:43
 @@ -2375,6 +2375,7 @@
          'Add temporary  allocation into assmebler files', {cs_asm_tempalloc}
          'Add node information into assembler files', {cs_asm_nodes}
@@ -375,9 +375,9 @@ diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/compiler/utils/ppuutils/ppud
          'Skip linking stage', {cs_link_nolink}
          'Link static', {cs_link_static}
 
-diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/rtl/darwin/unxfunc.inc /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/rtl/darwin/unxfunc.inc
---- /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/rtl/darwin/unxfunc.inc	2026-07-06 22:25:13
-+++ /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/rtl/darwin/unxfunc.inc	2026-07-21 15:21:03
+diff -ur a/rtl/darwin/unxfunc.inc b/rtl/darwin/unxfunc.inc
+--- a/rtl/darwin/unxfunc.inc	2026-07-06 22:25:13
++++ b/rtl/darwin/unxfunc.inc	2026-07-21 15:21:03
 @@ -26,6 +25,18 @@
  { closed our side, Now wait for the other - this appears to be needed ?? }
    pl:=@(filerec(f).userdata[2]);
@@ -398,9 +398,9 @@ diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/rtl/darwin/unxfunc.inc /Volu
  
  Function PClose(Var F:text) :cint;
 
-diff -ur /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/rtl/unix/unxovlh.inc /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/rtl/unix/unxovlh.inc
---- /Volumes/macOS 14/Library/fpc-il/fpc-3.3.1/rtl/unix/unxovlh.inc	2026-07-06 22:25:13
-+++ /Volumes/macOS 14/Users/administrator/fpc-svn/fpc/rtl/unix/unxovlh.inc	2026-07-21 15:21:19
+diff -ur a/rtl/unix/unxovlh.inc b/rtl/unix/unxovlh.inc
+--- a/rtl/unix/unxovlh.inc	2026-07-06 22:25:13
++++ b/rtl/unix/unxovlh.inc	2026-07-21 15:21:19
 @@ -15,5 +15,6 @@
  
  Function PClose(Var F:file) : cint;
