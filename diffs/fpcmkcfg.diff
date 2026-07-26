@@ -1,0 +1,48 @@
+
+# 20260725, Adriaan van Os <adriaan@adriaan.biz>
+# Add support for the fpc-llvm compiler in fpc.cfg
+
+--- a/utils/fpcmkcfg/fpc.cft	2026-04-02 20:35:03
++++ b/utils/fpcmkcfg/fpc.cft	2026-04-02 20:36:40
+@@ -155,9 +154,15 @@
+ #endif
+ 
+ # searchpath for units and other system dependent things
++#IFDEF CPULLVM
++-Fu/usr/local/lib/fpc/$fpcversion-llvm/units/$fpctarget
++-Fu/usr/local/lib/fpc/$fpcversion-llvm/units/$fpctarget/*
++-Fu/usr/local/lib/fpc/$fpcversion-llvm/units/$fpctarget/rtl
++#ELSE
+ -Fu%basepath%/units/$fpctarget
+ -Fu%basepath%/units/$fpctarget/*
+ -Fu%basepath%/units/$fpctarget/rtl
++#ENDIF
+ 
+ #IFDEF FPCAPACHE_1_3
+ -Fu%basepath%/units/$fpctarget/httpd13/
+
+
+# IMPORTANT NOTE
+# fpccfg.inc must be recreated from fpc.cft as follows:
+# cd utils/fpcmkcfg
+# data2inc -b -s fpc.cft fpccfg.inc DefaultConfig
+
+
+--- a/installer/install.dat	2026-03-11 10:47:22
++++ b/installer/install.dat	2026-04-02 20:44:11
+@@ -1053,9 +1052,15 @@
+ #-Fo%basepath%/source/rtl/inc;%basepath%/source/rtl/i386
+ 
+ # searchpath for units and other system dependent things
++#IFDEF CPULLVM
++-Fu/usr/local/lib/fpc/$fpcversion-llvm/units/%fpctargetmacro%
++-Fu/usr/local/lib/fpc/$fpcversion-llvm/units/%fpctargetmacro%/*
++-Fu/usr/local/lib/fpc/$fpcversion-llvm/units/%fpctargetmacro%/rtl
++#ELSE
+ -Fu%basepath%/units/%fpctargetmacro%
+ -Fu%basepath%/units/%fpctargetmacro%/*
+ -Fu%basepath%/units/%fpctargetmacro%/rtl
++#ENDIF
+ 
+ #ifdef cpui8086
+ -Fu%basepath%/units/%fpctargetmacro%/$fpcsubarch-$fpcmemorymodel
